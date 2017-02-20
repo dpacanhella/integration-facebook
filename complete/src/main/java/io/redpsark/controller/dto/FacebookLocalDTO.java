@@ -13,7 +13,7 @@ public class FacebookLocalDTO {
 
     private Long id;
     private String nome;
-    private String sobrenome;
-    private String email;
-    private String descricaoPost;
+    private String mensagem;
+    private String destinatario;
+    private String url;
 }

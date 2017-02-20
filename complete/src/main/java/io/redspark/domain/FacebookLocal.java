@@ -32,12 +32,12 @@ public class FacebookLocal {
     @Column(name = "FACE_NOME")
     private String nome;
     
-    @Column(name = "FACE_SOBRENOME")
-    private String sobrenome;
+    @Column(name = "FACE_MENSAGEM")
+    private String mensagem;
     
-    @Column(name = "FACE_EMAIL")
-    private String email;
+    @Column(name = "FACE_DESTINATARIO")
+    private String destinatario;
     
-    @Column(name = "FACE_DESCRICAO_POST")
-    private String descricaoPost;
+    @Column(name = "FACE_URL_FOTO")
+    private String url;
 }

@@ -1,5 +1,8 @@
 package io.redspark.controller;
 
+import java.util.List;
+
+import io.redspark.domain.FacebookLocal;
 import io.redspark.mapper.FacebookMapper;
 import io.redspark.service.FacebookService;
 import io.swagger.annotations.Api;
@@ -11,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.social.connect.ConnectionRepository;
 import org.springframework.social.facebook.api.Facebook;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,8 +51,16 @@ public class FacebookController {
     @RequestMapping(method = RequestMethod.POST, value="/post")
     @ApiOperation(value = "Post", notes = "Posta e salva alguns dados", response = String.class)
     @ApiResponses(value = { @ApiResponse(code = 401, message = "Not Unauthorized"), @ApiResponse(code = 200, message = "OK") })
-    public void post(Model model) {
-        facebookService.post(model, facebook, connectionRepository);
+    public String post(Model model) {
+        return facebookService.post(model, facebook, connectionRepository);
+    }
+    
+    @Transactional(readOnly = true)
+    @RequestMapping(method = RequestMethod.GET, value = "/todos")
+    @ApiOperation(value = "Get", notes = "Recupera dados de todos os usuário inseridos", response = FacebookLocal.class)
+    @ApiResponses(value = { @ApiResponse(code = 401, message = "Not Unauthorized"), @ApiResponse(code = 200, message = "OK") })
+    public List<FacebookLocal> get() {
+        return facebookService.getAll();
     }
 
 }

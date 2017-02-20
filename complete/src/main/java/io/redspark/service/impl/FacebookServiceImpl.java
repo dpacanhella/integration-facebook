@@ -1,6 +1,9 @@
 package io.redspark.service.impl;
 
+import java.util.List;
+
 import io.redpsark.controller.dto.FacebookLocalDTO;
+import io.redspark.domain.FacebookLocal;
 import io.redspark.mapper.FacebookMapper;
 import io.redspark.repository.FacebookRepository;
 import io.redspark.service.FacebookService;
@@ -8,11 +11,9 @@ import io.redspark.service.FacebookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.social.connect.Connection;
 import org.springframework.social.connect.ConnectionRepository;
-import org.springframework.social.connect.UserProfile;
 import org.springframework.social.facebook.api.Facebook;
 import org.springframework.social.facebook.api.PagedList;
 import org.springframework.social.facebook.api.Post;
-import org.springframework.social.facebook.api.User;
 import org.springframework.social.facebook.api.impl.FacebookTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -32,36 +33,64 @@ public class FacebookServiceImpl implements FacebookService {
             return "redirect:/connect/facebook";
         }
 
-        String[] fields = { "id", "email", "first_name", "last_name" };
+        PagedList<Post> feed = facebook.feedOperations().getPosts();
 
-        model.addAttribute("facebookProfile", facebook.fetchObject("me", User.class, fields));
-        PagedList<Post> feed = facebook.feedOperations().getFeed();
+        for (Post post : feed) {
+            FacebookLocalDTO dto = new FacebookLocalDTO();
+
+            dto.setNome(post.getFrom().getName());
+            dto.setMensagem(post.getMessage());
+            
+            if (post.getTo() != null) {
+                dto.setDestinatario(post.getTo().get(0).getName());
+            }
+
+            if (post.getPicture() != null) {
+                dto.setUrl(post.getPicture());
+            }
+            
+            facebookRepository.save(facebookMapper.toEntity(dto));
+
+        }
 
         model.addAttribute("feed", feed);
         return "hello";
     }
 
     @Override
-    public void post(Model model, Facebook facebook, ConnectionRepository connectionRepository) {
+    public String post(Model model, Facebook facebook, ConnectionRepository connectionRepository) {
         Connection<Facebook> connection = connectionRepository.findPrimaryConnection(Facebook.class);
 
         if (connection != null) {
-            Facebook api = connection.getApi();
 
-            User profile = facebook.userOperations().getUserProfile();
+            String accessToken = "EAARlalBh64sBAOFM8mfcu7WZCUZBk8k8fzILisYZBomKoZCG74Px7lVyZA1UQ5TecySq8NXzZC3iYWATj4l21Pcn4Asih6gH9nxT6eoaZCaKrG3NQol6jAiTBqnZCU3eLdDQo61le0WOVxZAdZAesi4zDiZBuNXyMgjgC0yzxEFEjqe8gZDZD";
 
+            Facebook face = new FacebookTemplate(accessToken);
 
-//            FacebookLocalDTO dto = new FacebookLocalDTO();
-//            dto.setEmail(userProfile.getEmail());
-//            dto.setNome(userProfile.getFirstName());
-//            dto.setSobrenome(userProfile.getLastName());
-//            dto.setDescricaoPost("Teste");
-//            facebookRepository.save(facebookMapper.toEntity(dto));
+            PagedList<String> friendIds = face.friendOperations().getFriendIds();
+
+            model.addAttribute("friends", friendIds);
+            // /return "home";
+
+            // User profile = facebook.userOperations().getUserProfile();
+
+            // FacebookLocalDTO dto = new FacebookLocalDTO();
+            // dto.setEmail(userProfile.getEmail());
+            // dto.setNome(userProfile.getFirstName());
+            // dto.setSobrenome(userProfile.getLastName());
+            // dto.setDescricaoPost("Teste");
+            // facebookRepository.save(facebookMapper.toEntity(dto));
 
             // FAZER O POST
-            api.feedOperations().updateStatus("Teste");
-            System.out.println("testes");
+            // facebook.feedOperations().updateStatus("Teste");
+            // System.out.println("testes");
 
         }
+        return "home";
+    }
+
+    @Override
+    public List<FacebookLocal> getAll() {
+        return facebookRepository.findAll();
     }
 }
